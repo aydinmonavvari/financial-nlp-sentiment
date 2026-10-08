@@ -1,0 +1,374 @@
+{
+  "generated_at": "2026-10-08T14:16:55.835484+00:00",
+  "project": "financial-nlp-sentiment",
+  "scope_note": "Classification benchmark on Financial PhraseBank (Malo et al. 2014). Label-level metrics only; no trading or market-prediction claims.",
+  "config": {
+    "val_size": 0.15,
+    "test_size": 0.15,
+    "random_state": 42,
+    "n_folds": 5,
+    "vader_pos_threshold": 0.35,
+    "vader_neg_threshold": -0.15,
+    "c_grid": [
+      0.25,
+      0.5,
+      1.0,
+      2.0,
+      4.0,
+      8.0
+    ],
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "finbert_model": "ProsusAI/finbert",
+    "finbert_batch_size": 64,
+    "finbert_max_length": 64,
+    "hf_repo": "takala/financial_phrasebank",
+    "hf_filename": "data/FinancialPhraseBank-v1.0.zip",
+    "phrasebank_config": "sentences_50agree",
+    "raw_dir": "/home/z/portfolio/financial-nlp-sentiment/data/raw",
+    "processed_dir": "/home/z/portfolio/financial-nlp-sentiment/data/processed",
+    "figures_dir": "/home/z/portfolio/financial-nlp-sentiment/figures",
+    "reports_dir": "/home/z/portfolio/financial-nlp-sentiment/reports",
+    "seed": 42
+  },
+  "dataset": {
+    "hf_repo": "takala/financial_phrasebank",
+    "archive": "FinancialPhraseBank-v1.0.zip (upstream distribution)",
+    "config_name": "sentences_50agree",
+    "n_rows_after_dedup": 4838,
+    "class_counts": {
+      "neutral": 2872,
+      "positive": 1362,
+      "negative": 604
+    },
+    "class_proportions": {
+      "negative": 0.1248,
+      "neutral": 0.5936,
+      "positive": 0.2815
+    },
+    "split_sizes": {
+      "train": 3386,
+      "val": 726,
+      "test": 726
+    },
+    "split_class_proportions": {
+      "train": {
+        "negative": 0.1246,
+        "neutral": 0.5936,
+        "positive": 0.2817
+      },
+      "val": {
+        "negative": 0.1253,
+        "neutral": 0.5937,
+        "positive": 0.281
+      },
+      "test": {
+        "negative": 0.1253,
+        "neutral": 0.5937,
+        "positive": 0.281
+      }
+    },
+    "split_design_note": "Stratified label-random 70/15/15 split (seed=42); the corpus is an unordered pool of standalone sentences with no timestamps, so a time-based split is not applicable and no market-prediction claim is made."
+  },
+  "timings_seconds": {
+    "data": 0.08,
+    "majority": 0.0003,
+    "vader": 0.28,
+    "tfidf": 16.5,
+    "embedding_corpus": 43.18,
+    "embedding_logreg": 1.82,
+    "finbert_test_inference": 41.29
+  },
+  "tuning": {
+    "tfidf_logreg": {
+      "best_C": 4.0,
+      "grid_records": [
+        {
+          "C": 0.25,
+          "val_macro_f1": 0.497183
+        },
+        {
+          "C": 0.5,
+          "val_macro_f1": 0.596573
+        },
+        {
+          "C": 1.0,
+          "val_macro_f1": 0.660097
+        },
+        {
+          "C": 2.0,
+          "val_macro_f1": 0.705285
+        },
+        {
+          "C": 4.0,
+          "val_macro_f1": 0.717203
+        },
+        {
+          "C": 8.0,
+          "val_macro_f1": 0.716197
+        }
+      ]
+    },
+    "minilm_embeddings_logreg": {
+      "best_C": 4.0,
+      "grid_records": [
+        {
+          "C": 0.25,
+          "val_macro_f1": 0.687373
+        },
+        {
+          "C": 0.5,
+          "val_macro_f1": 0.71527
+        },
+        {
+          "C": 1.0,
+          "val_macro_f1": 0.729198
+        },
+        {
+          "C": 2.0,
+          "val_macro_f1": 0.738264
+        },
+        {
+          "C": 4.0,
+          "val_macro_f1": 0.743067
+        },
+        {
+          "C": 8.0,
+          "val_macro_f1": 0.726859
+        }
+      ]
+    }
+  },
+  "cv_train": {
+    "tfidf_logreg": {
+      "n_folds": 5,
+      "C": 4.0,
+      "mean_macro_f1": 0.676764,
+      "std_macro_f1": 0.021277,
+      "fold_scores": [
+        0.669719,
+        0.713263,
+        0.680658,
+        0.67255,
+        0.647629
+      ]
+    },
+    "minilm_embeddings_logreg": {
+      "n_folds": 5,
+      "C": 4.0,
+      "mean_macro_f1": 0.727645,
+      "std_macro_f1": 0.013984,
+      "fold_scores": [
+        0.714167,
+        0.737992,
+        0.748863,
+        0.724733,
+        0.712468
+      ]
+    }
+  },
+  "finbert": {
+    "model": "ProsusAI/finbert",
+    "mode": "inference only (no fine-tuning)",
+    "coverage": "test split only (documented; directly comparable on test)",
+    "n_evaluated": 726,
+    "batch_size": 64,
+    "max_length": 64,
+    "seconds_per_1000_sentences": 54.79,
+    "total_seconds": 41.29,
+    "caveat": "ProsusAI/finbert's training corpus may overlap with Financial PhraseBank-style data; treat its scores as a domain-model reference, not a clean holdout result."
+  },
+  "results": [
+    {
+      "model": "majority",
+      "n_test": 726,
+      "accuracy": 0.5937,
+      "macro_f1": 0.2483,
+      "per_class": {
+        "negative": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 91
+        },
+        "neutral": {
+          "precision": 0.5937,
+          "recall": 1.0,
+          "f1": 0.745,
+          "support": 431
+        },
+        "positive": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 204
+        }
+      }
+    },
+    {
+      "model": "vader_lexicon",
+      "n_test": 726,
+      "accuracy": 0.5868,
+      "macro_f1": 0.4995,
+      "per_class": {
+        "negative": {
+          "precision": 0.4717,
+          "recall": 0.2747,
+          "f1": 0.3472,
+          "support": 91
+        },
+        "neutral": {
+          "precision": 0.6803,
+          "recall": 0.6961,
+          "f1": 0.6881,
+          "support": 431
+        },
+        "positive": {
+          "precision": 0.4353,
+          "recall": 0.4951,
+          "f1": 0.4633,
+          "support": 204
+        }
+      }
+    },
+    {
+      "model": "tfidf_logreg",
+      "n_test": 726,
+      "accuracy": 0.7562,
+      "macro_f1": 0.6989,
+      "per_class": {
+        "negative": {
+          "precision": 0.8125,
+          "recall": 0.5714,
+          "f1": 0.671,
+          "support": 91
+        },
+        "neutral": {
+          "precision": 0.7548,
+          "recall": 0.9142,
+          "f1": 0.8269,
+          "support": 431
+        },
+        "positive": {
+          "precision": 0.7357,
+          "recall": 0.5049,
+          "f1": 0.5988,
+          "support": 204
+        }
+      },
+      "brier_multiclass": 0.3392,
+      "mean_confidence": 0.761
+    },
+    {
+      "model": "minilm_embeddings_logreg",
+      "n_test": 726,
+      "accuracy": 0.7769,
+      "macro_f1": 0.7334,
+      "per_class": {
+        "negative": {
+          "precision": 0.7065,
+          "recall": 0.7143,
+          "f1": 0.7104,
+          "support": 91
+        },
+        "neutral": {
+          "precision": 0.7963,
+          "recall": 0.8886,
+          "f1": 0.8399,
+          "support": 431
+        },
+        "positive": {
+          "precision": 0.7582,
+          "recall": 0.5686,
+          "f1": 0.6499,
+          "support": 204
+        }
+      },
+      "brier_multiclass": 0.331,
+      "mean_confidence": 0.7954
+    },
+    {
+      "model": "finbert_inference",
+      "n_test": 726,
+      "accuracy": 0.8705,
+      "macro_f1": 0.8647,
+      "per_class": {
+        "negative": {
+          "precision": 0.7739,
+          "recall": 0.978,
+          "f1": 0.8641,
+          "support": 91
+        },
+        "neutral": {
+          "precision": 0.9521,
+          "recall": 0.8306,
+          "f1": 0.8872,
+          "support": 431
+        },
+        "positive": {
+          "precision": 0.7872,
+          "recall": 0.9069,
+          "f1": 0.8428,
+          "support": 204
+        }
+      },
+      "brier_multiclass": 0.1876,
+      "mean_confidence": 0.8723
+    }
+  ],
+  "mcnemar": {
+    "system_a": "finbert_inference",
+    "system_b": "minilm_embeddings_logreg",
+    "b_a_right_b_wrong": 120,
+    "c_a_wrong_b_right": 52,
+    "statistic": 52.0,
+    "p_value": 2.2849587651185315e-07,
+    "verdict": "significant at alpha=0.05",
+    "interpretation": "two-sided exact McNemar on paired test correctness; p=2.285e-07 -> significant at alpha=0.05"
+  },
+  "error_analysis_model": "minilm_embeddings_logreg",
+  "error_analysis_examples": [
+    {
+      "sentence": "The airline has ordered nine Airbus A350-900 aircraft with deliveries from 2011 , and in doing so becomes the lead airline for the latest variant of Rolls-Royce Trent series engines , called the 1700 .",
+      "true": "positive",
+      "predicted": "neutral",
+      "vader_pred": "neutral",
+      "finbert_pred": "positive"
+    },
+    {
+      "sentence": "According to Finnish financial services group Sampo 's CEO , Bj+\u00c2rn Wahlroos , Danish Danske Bank 's acquisition of Sampo Bank for EUR 4bn was the largest cash deal in Finland 's economic history .",
+      "true": "neutral",
+      "predicted": "positive",
+      "vader_pred": "neutral",
+      "finbert_pred": "positive"
+    },
+    {
+      "sentence": "`` Those uncertainties cloud the long-term outlook . ''",
+      "true": "negative",
+      "predicted": "neutral",
+      "vader_pred": "negative",
+      "finbert_pred": "negative"
+    },
+    {
+      "sentence": "As a consequence of the merger the number of administration personnel at the factories will be reduced by six .",
+      "true": "neutral",
+      "predicted": "negative",
+      "vader_pred": "neutral",
+      "finbert_pred": "neutral"
+    },
+    {
+      "sentence": "The company moved to an operating profit of EUR10 .9 m versus an operating loss of EUR15 .3 m. It also turned to EPS of EUR0 .08 versus loss per share of EUR0 .04 .",
+      "true": "positive",
+      "predicted": "negative",
+      "vader_pred": "neutral",
+      "finbert_pred": "positive"
+    },
+    {
+      "sentence": "The result will also be burdened by increased fixed costs associated with operations in China , and restructuring costs in Japan .",
+      "true": "negative",
+      "predicted": "positive",
+      "vader_pred": "negative",
+      "finbert_pred": "negative"
+    }
+  ],
+  "total_wall_seconds": 104.41
+}

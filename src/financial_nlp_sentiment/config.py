@@ -62,7 +62,7 @@ class StudyConfig:
     vader_pos_threshold: float = 0.35
     vader_neg_threshold: float = -0.15
 
-    c_grid: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0)
+    c_grid: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     finbert_model: str = "ProsusAI/finbert"

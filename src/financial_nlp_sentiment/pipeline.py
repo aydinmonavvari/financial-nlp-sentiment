@@ -246,14 +246,14 @@ def run_pipeline(config: StudyConfig | None = None, save_outputs: bool = True) -
         "system_b": best_two[1],
         **mcnemar_test(test_labels, pred_map[best_two[0]], pred_map[best_two[1]]),
     }
+    mcnemar["verdict"] = (
+        "significant at alpha=0.05"
+        if mcnemar["p_value"] < 0.05
+        else "NOT significant at alpha=0.05"
+    )
     mcnemar["interpretation"] = (
         "two-sided exact McNemar on paired test correctness; "
-        f"p={mcnemar['p_value']:.4f} -> "
-        + (
-            "significant at alpha=0.05"
-            if mcnemar["p_value"] < 0.05
-            else "NOT significant at alpha=0.05"
-        )
+        f"p={mcnemar['p_value']:.3e} -> {mcnemar['verdict']}"
     )
 
     # ---- 9) error analysis (best trainable system) --------------------------
@@ -500,7 +500,7 @@ def _save_reports(config, payload, results) -> None:
         f"- Systems: {m['system_a']} vs {m['system_b']}",
         f"- b (A right / B wrong): {m['b_a_right_b_wrong']}; "
         f"c (A wrong / B right): {m['c_a_wrong_b_right']}",
-        f"- Exact two-sided p = {m['p_value']:.4f} -> {m['interpretation']}",
+        f"- Exact two-sided p = {m['p_value']:.3e} -> {m['verdict']}",
         "",
         "## Hyperparameter tuning (validation macro-F1)",
         "",
