@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "financial-nlp-sentiment"
+version = "1.0.0"
+description = "Benchmarking financial sentiment classification approaches on the Financial PhraseBank corpus (educational research project; classification benchmark only, no trading claims)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Aydin Monavvari" }]
+keywords = [
+  "financial-nlp",
+  "sentiment-analysis",
+  "financial-phrasebank",
+  "finbert",
+  "benchmark",
+]
+dependencies = [
+  "pandas>=2.0",
+  "numpy>=1.26",
+  "scikit-learn>=1.4",
+  "matplotlib>=3.8",
+  "scipy>=1.11",
+  "statsmodels>=0.14",
+  "vaderSentiment>=3.3",
+  "huggingface_hub>=0.23",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+nlp = [
+  "torch",
+  "transformers>=4.40",
+  "sentence-transformers>=3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
