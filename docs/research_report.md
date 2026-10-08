@@ -49,7 +49,7 @@ Splits are stratified 70/15/15 (3,386 / 726 / 726, seed 42); label proportions m
 2. *VADER*: compound score thresholds fixed a priori — ≥ 0.35 → positive, ≤ −0.15 → negative, otherwise neutral. The asymmetric neutral band is a documented design decision (mildly positive finance prose inflates compound scores); thresholds were set before inspecting any PhraseBank output and are not tuned on any split.
 3. *TF-IDF + LogReg*: word 1–2 grams, sublinear TF, `min_df=2`, multinomial logistic regression; C selected on the validation split from {0.25, 0.5, 1, 2, 4, 8} by macro-F1 → C = 4.0.
 4. *Frozen embeddings + LogReg*: all-MiniLM-L6-v2 (384-d, CPU, frozen — no fine-tuning of the encoder), logistic regression head; same C grid → C = 4.0.
-5. *FinBERT*: `ProsusAI/finbert`, softmax probabilities remapped to the canonical label order; **inference only** — no parameters are updated, no training data is touched. Evaluated on the test split (n = 726), batch 64, max_length 64; ~54 s per 1,000 sentences on CPU, 41 s total for the test split including model load.
+5. *FinBERT*: `ProsusAI/finbert`, softmax probabilities remapped to the canonical label order; **inference only** — no parameters are updated, no training data is touched. Evaluated on the test split (n = 726), batch 64, max_length 64; ≈112 s per 1,000 sentences on CPU, ≈82 s total for the test split including model load (exact per-run timings in `reports/metrics.json`).
 
 **Model selection and validation.** The validation split is used only for C selection; 5-fold stratified cross-validation on the *training* split at the selected C is reported as a stability check for the two classical models (TF-IDF 0.677 ± 0.021; MiniLM+LR 0.728 ± 0.014). The test split is evaluated exactly once per system.
 

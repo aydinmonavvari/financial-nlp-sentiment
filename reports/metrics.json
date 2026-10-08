@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-08T14:16:55.835484+00:00",
+  "generated_at": "2026-10-08T21:44:02.218713+00:00",
   "project": "financial-nlp-sentiment",
   "scope_note": "Classification benchmark on Financial PhraseBank (Malo et al. 2014). Label-level metrics only; no trading or market-prediction claims.",
   "config": {
@@ -24,17 +24,20 @@
     "hf_repo": "takala/financial_phrasebank",
     "hf_filename": "data/FinancialPhraseBank-v1.0.zip",
     "phrasebank_config": "sentences_50agree",
-    "raw_dir": "/home/z/portfolio/financial-nlp-sentiment/data/raw",
-    "processed_dir": "/home/z/portfolio/financial-nlp-sentiment/data/processed",
-    "figures_dir": "/home/z/portfolio/financial-nlp-sentiment/figures",
-    "reports_dir": "/home/z/portfolio/financial-nlp-sentiment/reports",
+    "raw_dir": "data/raw",
+    "processed_dir": "data/processed",
+    "figures_dir": "figures",
+    "reports_dir": "reports",
     "seed": 42
   },
   "dataset": {
     "hf_repo": "takala/financial_phrasebank",
     "archive": "FinancialPhraseBank-v1.0.zip (upstream distribution)",
     "config_name": "sentences_50agree",
+    "n_rows_before_dedup": 4846,
     "n_rows_after_dedup": 4838,
+    "text_encoding": "ISO-8859-1 (byte-level verified; decoded faithfully, never re-encoded)",
+    "encoding_note": "The upstream archive itself contains pre-corrupted accented characters (e.g. latin-1 bytes rendering as 'Bj+\u00c2rn' where 'Bj\u00f6rn' was intended; ~134 '+<accent>' artifacts in Sentences_50Agree.txt, present in all four member files of the official v1.0 distribution). The loader preserves corpus text verbatim; see README data provenance for the full diagnosis.",
     "class_counts": {
       "neutral": 2872,
       "positive": 1362,
@@ -70,13 +73,13 @@
     "split_design_note": "Stratified label-random 70/15/15 split (seed=42); the corpus is an unordered pool of standalone sentences with no timestamps, so a time-based split is not applicable and no market-prediction claim is made."
   },
   "timings_seconds": {
-    "data": 0.08,
-    "majority": 0.0003,
-    "vader": 0.28,
-    "tfidf": 16.5,
-    "embedding_corpus": 43.18,
-    "embedding_logreg": 1.82,
-    "finbert_test_inference": 41.29
+    "data": 0.1,
+    "majority": 0.0004,
+    "vader": 0.29,
+    "tfidf": 21.31,
+    "embedding_corpus": 41.7,
+    "embedding_logreg": 1.79,
+    "finbert_test_inference": 81.97
   },
   "tuning": {
     "tfidf_logreg": {
@@ -173,8 +176,8 @@
     "n_evaluated": 726,
     "batch_size": 64,
     "max_length": 64,
-    "seconds_per_1000_sentences": 54.79,
-    "total_seconds": 41.29,
+    "seconds_per_1000_sentences": 112.28,
+    "total_seconds": 81.97,
     "caveat": "ProsusAI/finbert's training corpus may overlap with Financial PhraseBank-style data; treat its scores as a domain-model reference, not a clean holdout result."
   },
   "results": [
@@ -370,5 +373,5 @@
       "finbert_pred": "negative"
     }
   ],
-  "total_wall_seconds": 104.41
+  "total_wall_seconds": 149.12
 }

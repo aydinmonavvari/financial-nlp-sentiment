@@ -6,6 +6,18 @@ archive, mirrored on the Hugging Face Hub under the dataset id
 caches it under ``data/raw/`` (git-ignored) and parses the
 ``Sentences_50Agree.txt`` member (lines formatted ``sentence@label``).
 
+Encoding: the member files are ISO-8859-1 (verified byte-level: a strict UTF-8
+decode fails, and the archive contains ~160 non-ASCII bytes that are valid
+latin-1 accents such as n-tilde and a-grave). The loader therefore decodes with
+``iso-8859-1`` and never edits corpus text. Note that the upstream archive
+itself contains pre-corrupted accented characters (e.g. the byte sequence that
+latin-1-decodes to ``Bj+Ârn`` where ``Björn`` was intended, plus ~134 similar
+``+<accent>`` artifacts in ``Sentences_50Agree.txt``, present in all four
+member files of the official v1.0 distribution). These upstream artifacts are
+preserved verbatim — re-encoding or "repairing" them would mean fabricating
+corpus text; a UTF-8 decode is impossible and would additionally destroy the
+151 legitimate accented characters (see README §7 data provenance).
+
 The corpus is NEVER committed to this repository.
 """
 
@@ -43,7 +55,12 @@ class Splits:
 def _parse_member(
     archive_bytes: bytes, member_suffix: str = "Sentences_50Agree.txt"
 ) -> pd.DataFrame:
-    """Parse a ``sentence@label`` text member of the PhraseBank zip archive."""
+    """Parse a ``sentence@label`` text member of the PhraseBank zip archive.
+
+    The member is decoded as ISO-8859-1 (the encoding of the official
+    distribution; see the module docstring for the byte-level evidence and the
+    note on pre-corrupted accented characters inherited from upstream).
+    """
     rows: list[tuple[str, str]] = []
     with zipfile.ZipFile(io.BytesIO(archive_bytes)) as zf:
         member = next(n for n in zf.namelist() if n.endswith(member_suffix))
@@ -94,6 +111,9 @@ def load_phrasebank(config: StudyConfig | None = None, offline: bool = False) ->
     frame = _parse_member(zip_path.read_bytes())
     n_before = len(frame)
     frame = frame.drop_duplicates(subset=[SENTENCE_COL], keep="first").reset_index(drop=True)
+    # Persist the pre-dedup row count on the frame so the pipeline can report
+    # both sides of the deduplication step in reports/metrics.json.
+    frame.attrs["n_rows_before_dedup"] = n_before
     logger.info(
         "phrasebank[%s]: %d rows -> %d unique sentences (%d duplicates dropped)",
         config.phrasebank_config,

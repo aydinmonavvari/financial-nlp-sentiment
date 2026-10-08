@@ -14,6 +14,7 @@ from __future__ import annotations
 import subprocess
 import sys
 import zipfile
+from dataclasses import replace
 from io import BytesIO
 from pathlib import Path
 
@@ -22,11 +23,18 @@ import pandas as pd
 import pytest
 from scipy.stats import binom
 
-from financial_nlp_sentiment.config import ID_TO_LABEL, LABEL_TO_ID, LABELS, StudyConfig
+from financial_nlp_sentiment.config import (
+    ID_TO_LABEL,
+    LABEL_TO_ID,
+    LABELS,
+    StudyConfig,
+    sanitize_config_paths,
+)
 from financial_nlp_sentiment.data import (
     LABEL_COL,
     SENTENCE_COL,
     _parse_member,
+    load_phrasebank,
     load_synthetic_fixture,
     make_splits,
 )
@@ -368,6 +376,76 @@ def test_parse_member_rejects_unknown_label():
         zf.writestr("FinancialPhraseBank-v1.0/Sentences_50Agree.txt", "hello@bogus")
     with pytest.raises(ValueError, match="unexpected label"):
         _parse_member(buf.getvalue())
+
+
+def test_parse_member_decodes_iso8859_1_and_preserves_upstream_artifacts():
+    # The official v1.0 distribution is ISO-8859-1 (strict UTF-8 decode fails on
+    # it) and ships with PRE-CORRUPTED accented characters: the byte sequence
+    # 0x2B 0xC2 latin-1-decodes to 'Bj+Ârn' where 'Björn' was intended (upstream
+    # damage, present in all four member files). The parser must decode latin-1
+    # faithfully and must NOT rewrite corpus text (no invented characters, no
+    # U+FFFD replacement chars that a UTF-8 errors='replace' decode would spray
+    # over the 151 legitimate accented characters).
+    payload = (
+        b"caf\xe9 sales rose 5 %.@positive\r\n"
+        b"Bj+\xc2rn Wahlroos spoke.@neutral\r\n"
+    )
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("FinancialPhraseBank-v1.0/Sentences_50Agree.txt", payload)
+    frame = _parse_member(buf.getvalue())
+    assert frame.iloc[0][SENTENCE_COL] == "café sales rose 5 %."
+    assert frame.iloc[1][SENTENCE_COL] == "Bj+Ârn Wahlroos spoke."
+    assert "\ufffd" not in "".join(frame[SENTENCE_COL])
+
+
+def test_load_phrasebank_reports_n_rows_before_dedup(tmp_path):
+    # load_phrasebank must expose the pre-dedup row count so the pipeline can
+    # persist n_rows_before_dedup alongside n_rows_after_dedup in metrics.json.
+    lines = "\r\n".join([
+        "Net sales rose to 10 million euros.@positive",
+        "Net sales rose to 10 million euros.@positive",  # exact duplicate -> dropped
+        "The company was founded in 1998.@neutral",
+        "The group posted a loss.@negative",
+    ])
+    buf = BytesIO()
+    with zipfile.ZipFile(buf, "w") as zf:
+        zf.writestr("FinancialPhraseBank-v1.0/Sentences_50Agree.txt", lines)
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir(parents=True)
+    (raw_dir / "FinancialPhraseBank-v1.0.zip").write_bytes(buf.getvalue())
+    config = replace(
+        StudyConfig(),
+        raw_dir=raw_dir,
+        processed_dir=tmp_path / "processed",
+        figures_dir=tmp_path / "figures",
+        reports_dir=tmp_path / "reports",
+    )
+    frame = load_phrasebank(config, offline=True)
+    assert len(frame) == 3
+    assert frame.attrs["n_rows_before_dedup"] == 4
+
+
+# ---------------------------------------------------------------------------
+# config serialization (no machine paths in committed metrics.json)
+# ---------------------------------------------------------------------------
+def test_sanitize_config_paths_are_root_relative_posix():
+    from dataclasses import asdict
+
+    sanitized = sanitize_config_paths(asdict(StudyConfig()))
+    assert sanitized["raw_dir"] == "data/raw"
+    assert sanitized["processed_dir"] == "data/processed"
+    assert sanitized["figures_dir"] == "figures"
+    assert sanitized["reports_dir"] == "reports"
+    for key, value in sanitized.items():
+        text = str(value)
+        assert not text.startswith("/"), f"{key} leaked an absolute path: {text}"
+    # non-Path values pass through untouched (asdict keeps the c_grid tuple)
+    assert sanitized["random_state"] == 42
+    assert list(sanitized["c_grid"]) == [0.25, 0.5, 1.0, 2.0, 4.0, 8.0]
+    # paths outside the project root (explicit overrides) stay absolute posix
+    outside = sanitize_config_paths({"raw_dir": Path("/tmp/elsewhere/data")})
+    assert outside["raw_dir"] == "/tmp/elsewhere/data"
 
 
 def test_collect_misclassified_round_robin_pairs():

@@ -83,4 +83,28 @@ class StudyConfig:
             d.mkdir(parents=True, exist_ok=True)
 
 
+def sanitize_config_paths(values: dict) -> dict:
+    """Make a serialized config portable: ``Path`` values -> posix strings.
+
+    The serialized config is embedded verbatim in ``reports/metrics.json``, which
+    is committed to the repository. Absolute, machine-specific paths must never
+    leak into it: any ``Path`` that lives under ``PROJECT_ROOT``
+    is stored as a ``/``-separated path *relative to the project root*
+    (e.g. ``"data/raw"``). Paths outside the project root (explicit user
+    overrides) are kept as absolute posix strings — portable where possible,
+    honest where not.
+    """
+    out: dict = {}
+    for key, value in values.items():
+        if isinstance(value, Path):
+            try:
+                value = value.resolve().relative_to(PROJECT_ROOT)
+            except ValueError:
+                pass
+            out[key] = value.as_posix()
+        else:
+            out[key] = value
+    return out
+
+
 DEFAULT_CONFIG = StudyConfig()

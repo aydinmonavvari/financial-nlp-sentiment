@@ -1,9 +1,12 @@
-# Full local environment used to develop and run this study (Python 3.12, CPU-only
+# Full local environment used to develop and run this study (Python 3.12.14, CPU-only
 # torch). The canonical dependency spec lives in pyproject.toml:
 #   base deps      -> pip install -e .        (tests + lint run with base + dev only)
 #   dev extra      -> pip install -e .[dev]   (pytest, ruff)
 #   nlp extra      -> pip install -e .[nlp]   (torch, transformers, sentence-transformers)
 # This file pins the exact versions validated in the sandbox for reproducibility.
+# The header line below routes the torch pin (2.14.1+cpu) to the PyTorch CPU
+# wheel index, which is the only place that hosts +cpu local-version builds.
+--extra-index-url https://download.pytorch.org/whl/cpu
 
 # --- base project dependencies ---
 numpy==2.1.3
@@ -14,9 +17,10 @@ statsmodels==0.14.5
 matplotlib==3.9.2
 vaderSentiment==3.3.2
 huggingface_hub==1.33.0
+pyarrow==25.0.1
 
 # --- nlp extra (only needed to run the embedding / FinBERT parts of the study) ---
-torch==2.14.1+cpu        # installed from the PyTorch CPU index
+torch==2.14.1+cpu        # resolved via the PyTorch CPU index (header line above)
 transformers==5.19.0
 sentence-transformers==6.1.0
 datasets==5.1.0

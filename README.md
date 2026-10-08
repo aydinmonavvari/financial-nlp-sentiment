@@ -87,6 +87,20 @@ use — cite Malo et al. 2014). This repository accesses the Hugging Face Hub mi
 locally, and never redistributes or commits it. Model weights (MiniLM ≈ 90 MB,
 FinBERT ≈ 440 MB) are likewise downloaded once and never committed.
 
+**Text encoding (verified byte-level).** The archive's member files are ISO-8859-1:
+a strict UTF-8 decode fails, and the ~160 non-ASCII bytes are valid latin-1 accents
+(ñ, à, ä, £, …). The loader therefore decodes `iso-8859-1` and **never edits corpus
+text**. Note that the upstream archive itself ships with pre-corrupted accented
+characters — e.g. the byte sequence `0x2B 0xC2` that latin-1-renders as `Bj+Ârn`
+where `Björn` was intended, part of ~134 `+<accent>` artifacts in
+`Sentences_50Agree.txt` (present identically in all four member files of the
+official v1.0 distribution, alongside its `__MACOSX` metadata). These upstream
+damages are preserved verbatim rather than "repaired": no decoding recovers the
+lost characters, and rewriting corpus text (or switching to a UTF-8
+`errors="replace"` decode, which would additionally destroy the 151 *legitimate*
+accented characters) would fabricate data. The one affected sentence appears in the
+error-analysis examples exactly as distributed.
+
 ## 8 · Architecture
 
 ```
@@ -263,15 +277,16 @@ pip install -e .[nlp]          # only if you want to run the full study (torch e
 # 2) full study (~2 min on CPU after first download; seed = 42, deterministic)
 python scripts/run_study.py    # first run downloads corpus + models, then caches
 
-# 3) verify: lint + 27 offline tests
+# 3) verify: lint + 30 offline tests
 ruff check .
 pytest -q
 ```
 
 The study is deterministic: same seed, same splits, same metrics (two independent
-runs gave identical tables). Total wall time 104 s on CPU (FinBERT test inference
-41 s, MiniLM embedding of the full corpus 43 s). Heavy model tests are guarded with
-`pytest.importorskip`, so the 25 light tests pass with base deps only (CI does this).
+runs gave identical tables). Total wall time ≈ 149 s on CPU (FinBERT test inference
+82 s, MiniLM embedding of the full corpus 42 s; exact per-run timings are recorded
+in `reports/metrics.json`). Heavy model tests are guarded with
+`pytest.importorskip`, so the 28 light tests pass with base deps only (CI does this).
 
 ## 16 · Installation
 
@@ -283,7 +298,8 @@ pip install -e .[dev]      # base deps + pytest + ruff (no torch needed for test
 ```
 
 Base dependencies: numpy, pandas, scikit-learn, matplotlib, scipy, statsmodels,
-vaderSentiment, huggingface_hub. The `nlp` extra adds torch, transformers and
+vaderSentiment, huggingface_hub, pyarrow (parquet writer for the split-assignment
+audit artifact). The `nlp` extra adds torch, transformers and
 sentence-transformers (only needed for the embedding/FinBERT parts of the study).
 
 ## 17 · Usage
@@ -292,7 +308,7 @@ sentence-transformers (only needed for the embedding/FinBERT parts of the study)
 python scripts/run_study.py                      # full benchmark, all outputs
 python scripts/run_study.py --no-figures         # metrics + reports only
 python scripts/run_study.py --seed 7             # different split (for robustness)
-pytest -q                                        # 27 offline tests (25 run on CI)
+pytest -q                                        # 30 offline tests (28 run on CI)
 ```
 
 As a library:
@@ -349,7 +365,7 @@ financial-nlp-sentiment/
 │   ├── models.py        # majority, TfidfLogReg, EmbeddingLogReg, FinBERT, tuning + CV
 │   ├── evaluation.py    # macro-F1, per-class, confusion, Brier, exact McNemar, errors
 │   └── pipeline.py      # orchestration, figures, reports
-├── tests/               # 27 offline tests (heavy imports guarded for CI)
+├── tests/               # 30 offline tests (heavy imports guarded for CI)
 ├── scripts/run_study.py # CLI: --seed, --test-size, --val-size, --finbert-batch-size
 ├── data/raw · data/processed  # git-ignored caches (.gitkeep tracked)
 ├── reports/             # metrics.json + summary.md (generated, committed)

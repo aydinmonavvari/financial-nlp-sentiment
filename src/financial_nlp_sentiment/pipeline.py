@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from .config import ID_TO_LABEL, LABELS, StudyConfig
+from .config import ID_TO_LABEL, LABELS, StudyConfig, sanitize_config_paths
 from .data import (
     LABEL_COL,
     SENTENCE_COL,
@@ -102,7 +102,17 @@ def run_pipeline(config: StudyConfig | None = None, save_outputs: bool = True) -
         "hf_repo": config.hf_repo,
         "archive": "FinancialPhraseBank-v1.0.zip (upstream distribution)",
         "config_name": config.phrasebank_config,
+        "n_rows_before_dedup": int(frame.attrs.get("n_rows_before_dedup", len(frame))),
         "n_rows_after_dedup": len(frame),
+        "text_encoding": "ISO-8859-1 (byte-level verified; decoded faithfully, never re-encoded)",
+        "encoding_note": (
+            "The upstream archive itself contains pre-corrupted accented "
+            "characters (e.g. latin-1 bytes rendering as 'Bj+\u00c2rn' where "
+            "'Bj\u00f6rn' was intended; ~134 '+<accent>' artifacts in "
+            "Sentences_50Agree.txt, present in all four member files of the "
+            "official v1.0 distribution). The loader preserves corpus text "
+            "verbatim; see README data provenance for the full diagnosis."
+        ),
         "class_counts": {k: int(v) for k, v in frame[LABEL_COL].value_counts().items()},
         "class_proportions": {
             k: round(float(v), 4) for k, v in label_distribution(frame).items()
@@ -286,7 +296,7 @@ def run_pipeline(config: StudyConfig | None = None, save_outputs: bool = True) -
             "Classification benchmark on Financial PhraseBank (Malo et al. 2014). "
             "Label-level metrics only; no trading or market-prediction claims."
         ),
-        "config": {**asdict(config), **default_config_note(config)},
+        "config": {**sanitize_config_paths(asdict(config)), **default_config_note(config)},
         "dataset": dataset_block,
         "timings_seconds": timings,
         "tuning": {
@@ -472,7 +482,9 @@ def _save_reports(config, payload, results) -> None:
         "",
         f"- Corpus: `{payload['dataset']['hf_repo']}` :: "
         f"{payload['dataset']['config_name']} "
-        f"({payload['dataset']['n_rows_after_dedup']} unique sentences)",
+        f"({payload['dataset']['n_rows_before_dedup']} raw labeled lines -> "
+        f"{payload['dataset']['n_rows_after_dedup']} unique sentences after "
+        "exact-text dedup)",
         f"- Class counts: {payload['dataset']['class_counts']}",
         f"- Class proportions: {payload['dataset']['class_proportions']}",
         f"- Splits: {payload['dataset']['split_sizes']} (stratified, seed=42)",
