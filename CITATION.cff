@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "financial-nlp-sentiment: benchmarking financial sentiment classification on the Financial PhraseBank corpus"
+authors:
+  - family-names: Monavvari
+    given-names: Aydin
+    email: 245710241+aydinmonavvari@users.noreply.github.com
+version: 1.0.0
+date-released: "2026-10-08"
+license: MIT
+repository-code: "https://github.com/aydinmonavvari/financial-nlp-sentiment"
+keywords:
+  - financial-nlp
+  - sentiment-analysis
+  - financial-phrasebank
+  - finbert
+  - benchmark
+abstract: "Educational research project benchmarking a general-domain lexicon (VADER), a TF-IDF bag-of-words baseline, frozen sentence-embedding features and a domain-specific pretrained model (FinBERT, inference only) on the Financial PhraseBank corpus (Malo et al. 2014). Classification benchmark only; no trading or market-prediction claims."
