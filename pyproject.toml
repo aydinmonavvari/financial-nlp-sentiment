@@ -27,6 +27,7 @@ dependencies = [
   "vaderSentiment>=3.3",
   "huggingface_hub>=0.23",
   "pyarrow>=14",
+  "tabulate>=0.9",
 ]
 
 [project.optional-dependencies]
