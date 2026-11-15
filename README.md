@@ -71,6 +71,7 @@ and reports per-class behavior rather than a single accuracy number — because 
 | Property | Value |
 | --- | --- |
 | Source | Financial PhraseBank (Malo et al. 2014), via HF `takala/financial_phrasebank` |
+| License | CC BY-NC-SA 3.0 (non-commercial research use) |
 | Configuration | `sentences_50agree` (≥50% annotator agreement) |
 | Raw labeled lines | 4,846 → **4,838 unique sentences** after exact-text deduplication |
 | Classes | neutral 2,872 (59.4%) · positive 1,362 (28.1%) · negative 604 (12.5%) |
@@ -82,10 +83,12 @@ and reports per-class behavior rather than a single accuracy number — because 
 
 The corpus was built and labeled by Malo et al. (2014) and is distributed as the
 `FinancialPhraseBank-v1.0` archive (license file included in the archive; research
-use — cite Malo et al. 2014). This repository accesses the Hugging Face Hub mirror
-(`takala/financial_phrasebank`, file `data/FinancialPhraseBank-v1.0.zip`), caches it
-locally, and never redistributes or commits it. Model weights (MiniLM ≈ 90 MB,
-FinBERT ≈ 440 MB) are likewise downloaded once and never committed.
+use — cite Malo et al. 2014). Dataset by Malo et al. 2014, distributed via Hugging
+Face under CC BY-NC-SA 3.0; non-commercial research use. This repository accesses
+the Hugging Face Hub mirror (`takala/financial_phrasebank`, file
+`data/FinancialPhraseBank-v1.0.zip`), caches it locally, and never redistributes
+or commits it. Model weights (MiniLM ≈ 90 MB, FinBERT ≈ 440 MB) are likewise
+downloaded once and never committed.
 
 **Text encoding (verified byte-level).** The archive's member files are ISO-8859-1:
 a strict UTF-8 decode fails, and the ~160 non-ASCII bytes are valid latin-1 accents
@@ -405,8 +408,10 @@ Good debt or bad debt: Detecting semantic orientations in economic texts.
 
 ## 22 · License
 
-MIT — see [`LICENSE`](LICENSE). The Financial PhraseBank corpus and all model weights
-remain under their own licenses and are not redistributed by this repository.
+MIT — see [`LICENSE`](LICENSE). The Financial PhraseBank corpus (dataset by Malo et
+al. 2014, distributed via Hugging Face under CC BY-NC-SA 3.0; non-commercial research
+use) and all model weights remain under their own licenses and are not redistributed
+by this repository.
 
 ## 23 · Acknowledgments
 
